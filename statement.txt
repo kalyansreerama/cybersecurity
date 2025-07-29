@@ -1,0 +1,9 @@
+Secure Student Management System
+Description: An internal web system for managing students, courses, and grades. Initially developed with common vulnerabilities, it will be hardened to meet enterprise security standards.
+User Roles:
+Admin: Full control over students, courses, and grades.
+Lecturer: Can only add/edit marks for students enrolled in their assigned courses.
+Student: Can only view their own records and grades.
+Phase 1: The Insecure Baseline Application
+This phase focuses on getting the functionality working without proper security controls. This creates the "before" picture for your project.
+1. Project Setup and Models
