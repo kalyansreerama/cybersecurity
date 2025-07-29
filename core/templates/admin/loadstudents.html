@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student List</title>
+    <style>
+        /* --- General & Responsive Font Styles --- */
+        :root {
+            --primary-color: #007bff;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --border-color: #dee2e6;
+
+            /* Responsive font size: min, preferred, max */
+            --font-size-sm: clamp(0.8rem, 0.5vw + 0.6rem, 0.9rem);
+            --font-size-md: clamp(1rem, 1vw + 0.5rem, 1.2rem);
+            --font-size-lg: clamp(1.5rem, 2vw + 1rem, 2rem);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            font-size: var(--font-size-md);
+        }
+
+        .table-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: var(--font-size-lg);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* --- Search Input --- */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: var(--font-size-md);
+            box-sizing: border-box; /* Important for 100% width */
+        }
+
+        /* --- Table Styles --- */
+        .responsive-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .responsive-table thead {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .responsive-table th, .responsive-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: var(--font-size-sm);
+        }
+
+        .responsive-table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* --- Pagination Controls --- */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: var(--font-size-sm);
+        }
+
+        .pagination-container button {
+            padding: 8px 12px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .pagination-container button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        .pagination-container button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        /* --- RESPONSIVE STYLES for Small Screens --- */
+        @media screen and (max-width: 768px) {
+            .responsive-table thead {
+                display: none; /* Hide headers on small screens */
+            }
+
+            .responsive-table tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .responsive-table td {
+                display: block;
+                text-align: right; /* Align data to the right */
+                border-bottom: 1px dotted var(--border-color);
+            }
+            
+            .responsive-table td:last-child {
+                border-bottom: none;
+            }
+
+            .responsive-table td::before {
+                content: attr(data-label); /* Use data-label for header */
+                float: left;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="table-container">
+        <h1>Student List</h1>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search for students...">
+        </div>
+
+        <table class="responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Enrollment Date</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <!-- Data will be rendered here by Django -->
+                {% for student in students %}
+                <tr>
+                    <!-- 
+                      IMPORTANT: The `data-label` attribute must match the header text.
+                      This is used by the CSS for the responsive view.
+                    -->
+                    <td data-label="ID">{{ student.id }}</td>
+                    <td data-label="Full Name">{{ student.full_name }}</td>
+                    <td data-label="Email">{{ student.email }}</td>
+                    <td data-label="Course">{{ student.course }}</td>
+                    <td data-label="Enrollment Date">{{ student.enrollment_date|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">No students found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination-container">
+            <button id="prevButton" disabled>Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextButton">Next</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+        });
+    </script>
+</body>
+</html>

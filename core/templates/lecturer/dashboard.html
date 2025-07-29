@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Lecturer Dashboard - My Students</h1>
+    <ul>
+        {% for student in students %}
+            <li>
+                {{ student.user.username }}
+                <ul>
+                    {% for course in courses %}
+                        {% if course in student.courses.all %}
+                        <li>
+                            {{ course.name }} - 
+                            <a href="{% url 'update_grade' student.id course.id %}">Update Grade</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Students</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* --- General & Responsive Font Styles --- */
+        :root {
+            --primary-color: #007bff;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --border-color: #dee2e6;
+
+            /* Responsive font size: min, preferred, max */
+            --font-size-sm: clamp(0.8rem, 0.5vw + 0.6rem, 0.9rem);
+            --font-size-md: clamp(1rem, 1vw + 0.5rem, 1.2rem);
+            --font-size-lg: clamp(1.5rem, 2vw + 1rem, 2rem);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            font-size: var(--font-size-md);
+        }
+
+        .table-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: var(--font-size-lg);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* --- Search Input --- */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: var(--font-size-md);
+            box-sizing: border-box; /* Important for 100% width */
+        }
+
+        /* --- Table Styles --- */
+        .responsive-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .responsive-table thead {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .responsive-table th, .responsive-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: var(--font-size-sm);
+        }
+
+        .responsive-table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* --- Pagination Controls --- */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: var(--font-size-sm);
+        }
+
+        .pagination-container button {
+            padding: 8px 12px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .pagination-container button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        .pagination-container button:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+
+        /* --- RESPONSIVE STYLES for Small Screens --- */
+        @media screen and (max-width: 768px) {
+            .responsive-table thead {
+                display: none; /* Hide headers on small screens */
+            }
+
+            .responsive-table tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .responsive-table td {
+                display: block;
+                text-align: right; /* Align data to the right */
+                border-bottom: 1px dotted var(--border-color);
+            }
+            
+            .responsive-table td:last-child {
+                border-bottom: none;
+            }
+
+            .responsive-table td::before {
+                content: attr(data-label); /* Use data-label for header */
+                float: left;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+    </style>
+    <style>
+        /* General Setup & Responsive Typography */
+        html { 
+            scroll-behavior: smooth; 
+        }
+        body { 
+            background-color: #f8f9fa; 
+            font-size: 1rem;
+        }
+        @media (max-width: 768px) {
+            body { font-size: 0.9rem; }
+        }
+        
+        /* Sidebar Styling */
+        .sidebar { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            bottom: 0; 
+            width: 250px; 
+            z-index: 1020; /* Higher z-index for offcanvas */
+            padding-top: 48px; 
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1); 
+            background-color: #343a40; 
+            transition: transform .3s ease-in-out;
+        }
+        .sidebar-sticky { 
+            position: relative; 
+            top: 0; 
+            height: calc(100vh - 48px); 
+            padding-top: .5rem; 
+            overflow-x: hidden; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .sidebar .nav-link { 
+            font-weight: 500; 
+            color: #c2c7d0; 
+        }
+        .sidebar .nav-link .fa-fw { 
+            width: 20px; 
+            text-align: center; 
+            margin-right: 8px; 
+        }
+        .sidebar .nav-link.active, .sidebar .nav-link:hover { 
+            color: #fff; 
+            background-color: #495057;
+        }
+        
+        /* Main Content Area */
+        .main-content { 
+            margin-left: 250px; 
+            padding: 20px; 
+            transition: margin-left .3s ease-in-out;
+        }
+        @media (max-width: 767.98px) { 
+            .main-content { margin-left: 0; } 
+        }
+
+        /* Utility and Component Styling */
+        .navbar-toggler { border: none; }
+        .metric-card { transition: transform .2s; }
+        .metric-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        .table-container.loading { 
+            opacity: 0.5; 
+            pointer-events: none; 
+            transition: opacity .3s;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Mobile Header & Sidebar Toggle -->
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-2 shadow d-md-none">
+    
+    
+</header>
+
+<!-- Sidebar -->
+<nav id="sidebarMenu" class="d-md-block sidebar bg-dark offcanvas-md offcanvas-start">
+    <div class="sidebar-sticky">
+        <div>
+            
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link active" href="#metrics-section"><i class="fa-fw fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="#students-section"><i class="fa-fw fas fa-user-graduate"></i> Students</a></li>
+                <li class="nav-item"><a class="nav-link" href="#courses-section"><i class="fa-fw fas fa-book"></i> Courses</a></li>
+                <li class="nav-item"><a class="nav-link" href="#lecturers-section"><i class="fa-fw fas fa-chalkboard-teacher"></i> Lecturers</a></li>
+                <li class="nav-item"><a class="nav-link" href="#logs-section"><i class="fa-fw fas fa-history"></i> Audit Logs</a></li>
+            </ul>
+        </div>
+        <div class="mt-auto p-3">
+             <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <h1 class="h2">Admin Dashboard</h1>
+    </div>
+
+    <!-- Metrics Section -->
+    <section id="metrics-section" class="mb-4">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-3"><div class="card text-white bg-primary metric-card"><div class="card-body d-flex justify-content-between align-items-center"><div><h5 class="card-title">Total Students</h5><p class="card-text fs-2 fw-bold">{{ total_students }}</p></div><i class="fas fa-user-graduate fa-3x opacity-50"></i></div></div></div>
+            <div class="col-lg-4 col-md-6 mb-3"><div class="card text-white bg-success metric-card"><div class="card-body d-flex justify-content-between align-items-center"><div><h5 class="card-title">Total Courses</h5><p class="card-text fs-2 fw-bold">{{ total_courses }}</p></div><i class="fas fa-book fa-3x opacity-50"></i></div></div></div>
+            <div class="col-lg-4 col-md-12 mb-3"><div class="card text-white bg-warning metric-card"><div class="card-body d-flex justify-content-between align-items-center"><div><h5 class="card-title">Total Lecturers</h5><p class="card-text fs-2 fw-bold">{{ total_lecturers }}</p></div><i class="fas fa-chalkboard-teacher fa-3x opacity-50"></i></div></div></div>
+        </div>
+    </section>
+
+    <div class="table-container">
+        <h1>Student List</h1>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search for students...">
+        </div>
+
+        <table class="responsive-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Enrollment Date</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <!-- Data will be rendered here by Django -->
+                {% for student in students %}
+                <tr>
+                    <!-- 
+                      IMPORTANT: The `data-label` attribute must match the header text.
+                      This is used by the CSS for the responsive view.
+                    -->
+                    <td data-label="ID">{{ student.id }}</td>
+                    <td data-label="Full Name">{{ student.full_name }}</td>
+                    <td data-label="Email">{{ student.email }}</td>
+                    <td data-label="Course">{{ student.course }}</td>
+                    <td data-label="Enrollment Date">{{ student.enrollment_date|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">No students found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination-container">
+            <button id="prevButton" disabled>Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextButton">Next</button>
+        </div>
+    </div>
+
+</main>
+
+<!-- Generic View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="viewModalLabel">Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><div id="modal-content-body"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div></div></div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    
+
+    // --- Auto-close Sidebar on Mobile After Link Click ---
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    if (sidebarMenu) {
+        const bsOffcanvas = new bootstrap.Offcanvas(sidebarMenu);
+        const sidebarLinks = sidebarMenu.querySelectorAll('.nav-link');
+        sidebarLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (bsOffcanvas._isShown) {
+                    bsOffcanvas.hide();
+                }
+            });
+        });
+    }
+
+    // --- CONFIGURATION ---
+            const ROWS_PER_PAGE = 10;
+
+            // --- DOM ELEMENTS ---
+            const searchInput = document.getElementById('searchInput');
+            const tableBody = document.getElementById('studentTableBody');
+            const allRows = Array.from(tableBody.getElementsByTagName('tr'));
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const pageInfo = document.getElementById('pageInfo');
+            
+            // --- STATE ---
+            let currentPage = 1;
+            let filteredRows = [...allRows]; // Start with all rows
+
+            // --- FUNCTIONS ---
+            function renderTable() {
+                // Clear the current table body
+                tableBody.innerHTML = '';
+                
+                // If no rows, show a message
+                if (filteredRows.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No matching students found.</td></tr>';
+                    updatePagination(); // Still update pagination to show correct state
+                    return;
+                }
+                
+                // Calculate rows for the current page
+                const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+                const endIndex = startIndex + ROWS_PER_PAGE;
+                const paginatedRows = filteredRows.slice(startIndex, endIndex);
+                
+                // Append rows for the current page
+                paginatedRows.forEach(row => {
+                    tableBody.appendChild(row);
+                });
+                
+                updatePagination();
+            }
+            
+            function updatePagination() {
+                const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+
+                // Update page info text
+                if (totalPages > 0) {
+                    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                } else {
+                    pageInfo.textContent = 'Page 1 of 1';
+                }
+
+                // Enable/disable buttons
+                prevButton.disabled = currentPage === 1;
+                nextButton.disabled = currentPage === totalPages || totalPages === 0;
+            }
+
+            function handleSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                
+                filteredRows = allRows.filter(row => {
+                    // Check if row text content includes the search term
+                    return row.textContent.toLowerCase().includes(searchTerm);
+                });
+                
+                // Reset to the first page for a new search
+                currentPage = 1;
+                renderTable();
+            }
+
+            // --- EVENT LISTENERS ---
+            searchInput.addEventListener('input', handleSearch);
+
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+
+            // --- INITIAL RENDER ---
+            renderTable();
+});
+</script>
+
+</body>
+</html>

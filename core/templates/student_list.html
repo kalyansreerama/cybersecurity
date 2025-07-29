@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>All Students</h1>
+    <ul>
+        {% for student in students %}
+            <li>
+                {{ student.user.username }}
+                <ul>
+                    {% for course in student.courses.all %}
+                        <li>
+                            {{ course.name }} - 
+                            <!-- This link is insecure as anyone can click it -->
+                            <a href="{% url 'update_grade' student.id course.id %}">Update Grade</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
