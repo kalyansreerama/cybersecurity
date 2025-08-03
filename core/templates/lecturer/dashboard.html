@@ -1,21 +1,429 @@
-{% extends 'base.html' %}
-{% block content %}
-    <h1>Lecturer Dashboard - My Students</h1>
-    <ul>
-        {% for student in students %}
-            <li>
-                {{ student.user.username }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Finance Dashboard</title>
+    
+    <!-- Google Fonts: Lato -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+
+    <style>
+        /* --- CSS VARIABLES FOR EASY THEming --- */
+        :root {
+            --primary-color: #005A9C; /* University Blue */
+            --secondary-color: #E87722; /* Accent Orange */
+            --background-color: #f4f7fc;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --text-light: #666666;
+            --border-color: #e0e0e0;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        /* --- GLOBAL STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* --- HEADER & NAVIGATION --- */
+        .header {
+            background-color: var(--card-background);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--primary-color);
+        }
+
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .main-nav a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+        
+        .main-nav a.active, .main-nav a:hover {
+            color: var(--primary-color);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-menu i {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+
+        /* --- MAIN DASHBOARD LAYOUT --- */
+        .main-content {
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* --- CARD STYLES --- */
+        .card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        /* --- SPECIFIC CARD STYLING --- */
+
+        /* 1. Account Summary Card */
+        .account-summary {
+            grid-column: 1 / -1; /* Make this card span the full width on larger screens */
+            text-align: center;
+        }
+
+        .balance-amount {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--text-color);
+            margin: 1rem 0;
+        }
+        
+        .due-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .due-info p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .due-info span {
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .due-info span.overdue {
+            color: var(--danger-color);
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 700;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #d46a1e;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+        }
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* 2. Action Center Card */
+        .action-center ul {
+            list-style: none;
+        }
+        
+        .action-center li {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .action-center li:last-child {
+            border-bottom: none;
+        }
+        
+        .action-center i {
+            font-size: 1.2rem;
+            width: 25px;
+            text-align: center;
+        }
+        
+        .action-center .fa-triangle-exclamation { color: var(--danger-color); }
+        .action-center .fa-file-lines { color: var(--secondary-color); }
+        .action-center .fa-envelope { color: var(--primary-color); }
+        .action-center .fa-circle-check { color: var(--success-color); }
+        .action-center a {
+            color: var(--primary-color);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* 3. Recent Activity Card */
+        .activity-feed .activity-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .activity-feed .activity-item:last-child { border-bottom: none; }
+        
+        .activity-item .description { color: var(--text-light); }
+        .activity-item .amount { font-weight: 700; }
+        .activity-item .amount.credit { color: var(--success-color); }
+
+        .card-footer-link {
+            text-align: right;
+            margin-top: 1rem;
+        }
+        .card-footer-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        
+        /* 4. Payment Plan Card */
+        .payment-plan-status {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            height: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar-fill {
+            width: 50%; /* Example: 2 of 4 payments */
+            height: 100%;
+            background-color: var(--success-color);
+            border-radius: 5px;
+        }
+
+        /* 5. Quick Links Card */
+        .quick-links ul {
+            list-style: none;
+        }
+        .quick-links li {
+            padding: 0.25rem 0;
+        }
+        .quick-links a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr; /* Stack cards vertically */
+            }
+            .balance-amount {
+                font-size: 2.5rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">UNIVERSITY</div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#" class="active">Dashboard</a></li>
+                <li><a href="#">Account Activity</a></li>
+                <li><a href="#">Payments</a></li>
+                <li><a href="#">Financial Aid</a></li>
+            </ul>
+        </nav>
+        <div class="user-menu">
+            <i class="fa-solid fa-message"></i>
+            <span>Welcome, Alex</span>
+            <i class="fa-solid fa-user-circle"></i>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="dashboard-grid">
+            
+            <!-- Card 1: Account Summary -->
+            <div class="card account-summary">
+                <h2>Account Summary</h2>
+                <div class="balance-amount">$5,432.10</div>
+                <div class="due-info">
+                    <p>Amount Due Now: <span class="overdue">$1,810.70</span></p>
+                    <p>Payment Due Date: <strong>October 15, 2024</strong></p>
+                </div>
+                <div class="cta-buttons">
+                    <a href="#" class="btn btn-primary">Make a Payment</a>
+                    <a href="#" class="btn btn-secondary">Enroll in Payment Plan</a>
+                </div>
+            </div>
+
+            <!-- Card 2: Action Center -->
+            <div class="card action-center">
+                <h2>Action Required</h2>
                 <ul>
-                    {% for course in courses %}
-                        {% if course in student.courses.all %}
-                        <li>
-                            {{ course.name }} - 
-                            <a href="{% url 'update_grade' student.id course.id %}">Update Grade</a>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
+                    <li>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span><strong>Financial Hold:</strong> A registration hold is on your account.</span>
+                        <a href="#">Resolve</a>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span><strong>Missing Document:</strong> FAFSA Verification Worksheet.</span>
+                        <a href="#">Upload</a>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-envelope"></i>
+                        <span><strong>Unread Message:</strong> From the Financial Aid Office.</span>
+                        <a href="#">Read</a>
+                    </li>
+                    <!--
+                    <li>
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>You're all set! No pending actions.</span>
+                    </li>
+                    -->
                 </ul>
-            </li>
-        {% endfor %}
-    </ul>
-{% endblock %}
+            </div>
+
+            <!-- Card 3: Recent Account Activity -->
+            <div class="card recent-activity">
+                <h2>Recent Activity</h2>
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div>
+                            <strong>Online Payment - Thank You</strong>
+                            <div class="description">Sep 25, 2024</div>
+                        </div>
+                        <div class="amount credit">-$1,000.00</div>
+                    </div>
+                    <div class="activity-item">
+                        <div>
+                            <strong>Fall 2024 Health Services Fee</strong>
+                            <div class="description">Sep 20, 2024</div>
+                        </div>
+                        <div class="amount">$250.00</div>
+                    </div>
+                    <div class="activity-item">
+                        <div>
+                            <strong>Federal Pell Grant Disbursed</strong>
+                            <div class="description">Sep 15, 2024</div>
+                        </div>
+                        <div class="amount credit">-$2,500.00</div>
+                    </div>
+                </div>
+                <div class="card-footer-link">
+                    <a href="#">View All Activity →</a>
+                </div>
+            </div>
+
+            <!-- Card 4: Payment Plan Status -->
+            <div class="card payment-plan">
+                <h2>Your Fall 2024 Payment Plan</h2>
+                <p class="payment-plan-status">2 of 4 Payments Made</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill"></div>
+                </div>
+                <p><strong>Next Installment:</strong> $905.35 due November 1, 2024</p>
+                <div class="card-footer-link">
+                    <a href="#">Manage Plan →</a>
+                </div>
+            </div>
+
+            <!-- Card 5: Financial Aid Summary -->
+            <div class="card financial-aid">
+                <h2>Financial Aid - Fall 2024</h2>
+                <p><strong>Total Awarded:</strong> $4,000.00</p>
+                <p><strong>Applied to Account:</strong> $4,000.00</p>
+                <p><strong>Pending Disbursement:</strong> $0.00</p>
+                <div class="card-footer-link">
+                    <a href="#">View Full Award Details →</a>
+                </div>
+            </div>
+
+            <!-- Card 6: Quick Links -->
+            <div class="card quick-links">
+                <h2>Quick Links</h2>
+                <ul>
+                    <li><a href="#">View & Print Statements</a></li>
+                    <li><a href="#">Set Up eRefund Account</a></li>
+                    <li><a href="#">View 1098-T Tax Forms</a></li>
+                    <li><a href="#">Help & FAQ</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

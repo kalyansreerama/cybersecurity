@@ -3,14 +3,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Student, Course, Grade, User, AuditLog, Lecturer, Enrollment
 
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404,HttpResponse
 
 
 from django.core.exceptions import PermissionDenied
 
 from .decorators import admin_required, lecturer_required, student_required
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib import messages
 
 from .forms import LecturerForm
@@ -186,19 +186,65 @@ def update_grade(request, student_id, course_id):
 
 # --- Student Views ---
 
+#@student_required
+# student/views.py
+
+
+# We assume you have a decorator like this in a `decorators.py` file.
+# If not, the role check inside the view will handle security.
+# from .decorators import student_required
+
 @student_required
 def student_dashboard(request):
-    student = request.user
-    #registered_courses = Course.objects.filter(enrollment__student=student)
-    registered_courses = Enrollment.objects.all()
-    #completed_courses = Course.objects.filter(enrollment__student=student, enrollment__completed=True)
-    completed_courses = Enrollment.objects.all()
-    all_courses = Course.objects.all()
-    return render(request, 'student/dashboard.html', {
-        'registered_courses': registered_courses,
-        'completed_courses': completed_courses,
-        'all_courses': all_courses,
-    })
+    """
+    Displays the academic dashboard for a logged-in student.
+    
+    This view provides context for:
+    - Courses the student is currently enrolled in (in-progress).
+    - Courses the student has completed, including their grades.
+    - A list of all other available courses they can enroll in.
+    - A feed of their recent account activity from the AuditLog.
+    """
+    # 1. Verify that the logged-in user is a student.
+    #    Redirects to a homepage if they are not (e.g., a lecturer).
+    if not hasattr(request.user, 'role') or request.user.role != 'STUDENT':
+        
+        return HttpResponse('Access Denied') 
+
+    student = request.user.id
+    
+    print(student)
+
+    # 2. Fetch all enrollments for the current student.
+    #    Using .select_related() is a major performance optimization. It fetches the
+    #    related Course and Grade objects in the same database query, preventing
+    #    many extra queries when you loop in the template.
+    all_enrollments = Enrollment.objects.filter(student=student).select_related('course', 'grade')
+
+    # 3. Filter the enrollments into two separate lists for the template.
+    #    This is efficient as it filters the already-fetched queryset.
+    registered_enrollments = all_enrollments.filter(completed=False)
+    completed_enrollments = all_enrollments.filter(completed=True)
+    
+    # 4. Find all courses the student has NOT yet enrolled in.
+    #    First, get a list of IDs for all courses the student is in.
+    enrolled_course_ids = all_enrollments.values_list('course__id', flat=True)
+    #    Then, query the Course model, excluding those IDs.
+    available_courses = Course.objects.exclude(id__in=enrolled_course_ids)
+
+    # 5. Get the 5 most recent activities for the student's timeline.
+    recent_activity = AuditLog.objects.filter(user=student).order_by('-timestamp')[:5]
+
+    # 6. Assemble the context dictionary to pass to the template.
+    context = {
+        'student': student,
+        'registered_enrollments': registered_enrollments,
+        'completed_enrollments': completed_enrollments,
+        'available_courses': available_courses,
+        'recent_activity': recent_activity,
+    }
+    
+    return render(request, 'student/dashboard.html', context)
 
 #@login_required
 def enroll_course(request, course_id):
