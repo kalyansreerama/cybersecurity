@@ -67,7 +67,7 @@ Follow these instructions to set up and run the project on a Windows machine.
 ### 1. Clone the Repository
 Open Command Prompt or PowerShell and clone the repository.
 ```powershell
-git clone https://github.com/your-username/secure-student-management-system.git
+git clone https://github.com/kalyansreerama/cybersecurity.git
 cd secure-student-management-system
 ```
 # Set Up the Virtual Environment
